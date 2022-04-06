@@ -1,0 +1,5 @@
+bandit-output.json
+trufflehog-output.json
+terraformdockerinfra/.terraform.lock.hcl
+terraformdockerinfra/terraform.tfstate
+terraformdockerinfra/terraform.tfstate.backup
