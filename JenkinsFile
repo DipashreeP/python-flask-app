@@ -35,9 +35,12 @@ pipeline {
                 stage('Flake8') {
                     steps {
                         echo 'Flake8 Scaning'
-                        sh 'python3 -m flake8 . --format=json --output-file flake8-output.json --exit-zero'
+                        sh 'docker run -ti --rm -v $(pwd):/apps alpine/flake8:3.5.0 flake8 . --format=json --output-file flake8-output.json | exit 0'
+
+                        // sh 'python3 -m flake8 . --format=json --output-file flake8-output.json --exit-zero'
                     }
                 }
+
                 
             }
         }    
@@ -98,23 +101,23 @@ pipeline {
                 sh "kubectl apply -f python-flask-deployment.yml"
             }
         }
-        stage('Integrate terrform '){
-            steps{
-                echo 'Deploy Terrform'
-                sh 'cd terraformdockerinfra'
-                sh 'pwd'
-                sh 'terraform fmt'
-                sh 'terraform validate'
-                sh 'terraform apply -auto-approve'
-            }
-        }
-        stage('Integrate Ansible'){
-            steps{
-                echo 'Deploy Ansible'
-                sh 'cd ..'
-                sh 'ansible-playbook aplaybooksapp2/playbook.yml -i aplaybooksapp2/inventory'
-            }
-        }
+        // stage('Integrate terrform '){
+        //     steps{
+        //         echo 'Deploy Terrform'
+        //         sh 'cd terraformdockerinfra'
+        //         sh 'pwd'
+        //         sh 'terraform fmt'
+        //         sh 'terraform validate'
+        //         sh 'terraform apply -auto-approve'
+        //     }
+        // }
+        // stage('Integrate Ansible'){
+        //     steps{
+        //         echo 'Deploy Ansible'
+        //         sh 'cd ..'
+        //         sh 'ansible-playbook aplaybooksapp2/playbook.yml -i aplaybooksapp2/inventory'
+        //     }
+        // }
 
     }
     post {
