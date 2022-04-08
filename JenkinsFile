@@ -18,7 +18,29 @@ pipeline {
                 sh 'docker run --user $(id -u):$(id -g) -v $(pwd):/src --rm secfigo/bandit bandit -r /src -f json -o /src/bandit-output.json | exit 0'
             }
         }       
-
+        stage('Testing') {
+            parallel {
+                stage('SCA using Bandit') {
+                    steps {
+                        echo 'Scanning the Source Code using Bandit'
+                        sh 'docker run --user $(id -u):$(id -g) -v $(pwd):/src --rm secfigo/bandit bandit -r /src -f json -o /src/bandit-output.json | exit 0'
+                    }
+                }
+                stage('Git Secret using TruffleHog') {
+                    steps {
+                        echo 'Scan the git repo using Trufflehog'
+                        sh 'docker run --user $(id -u):$(id -g) --rm -v "$(pwd):/proj" dxa4481/trufflehog file:///proj --json | tee trufflehog-output.json'
+                    }
+                }
+                stage('Flake8') {
+                    steps {
+                        echo 'Flake8 Scaning'
+                        sh 'python3 -m flake8 . --format=json --output-file flake8-output.json --exit-zero'
+                    }
+                }
+                
+            }
+        }    
         stage('Check for passwords injection') {
             steps {
                 echo 'Scanning the Source Code for plaintext passwords'
@@ -76,6 +98,24 @@ pipeline {
                 sh "kubectl apply -f python-flask-deployment.yml"
             }
         }
+        stage('Integrate terrform '){
+            steps{
+                echo 'Deploy Terrform'
+                sh 'cd terraformdockerinfra'
+                sh 'pwd'
+                sh 'terraform fmt'
+                sh 'terraform validate'
+                sh 'terraform apply -auto-approve'
+            }
+        }
+        stage('Integrate Ansible'){
+            steps{
+                echo 'Deploy Ansible'
+                sh 'cd ..'
+                sh 'ansible-playbook aplaybooksapp2/playbook.yml -i aplaybooksapp2/inventory'
+            }
+        }
+
     }
     post {
         always {
